@@ -1,14 +1,22 @@
 const User = require('../models/User');
 const {StatusCodes} = require('http-status-codes');
-const {BadRequestError} = require('../errors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const register = async(req, res) => {
-    const {name, email, password} = req.body;
-    if(!name || !email || !password){
-        throw new BadRequestError('Please provide name, email, and password!');
-    }
     const newUser = await User.create({...req.body})
-    res.status(StatusCodes.CREATED).json({newUser});
+
+    // Creating token
+    const token =  jwt.sign(
+        {
+           userId: newUser._id,
+           name: newUser.name
+        },
+        'jwtSecret',
+        {expiresIn: '30d'}
+    )
+
+    res.status(StatusCodes.CREATED).json({user: {name : newUser.name}, token});
 }
 
 const login = (req, res) => {
