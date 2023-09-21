@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const UserSchema = new mongoose.Schema({
     name : {
@@ -26,9 +27,27 @@ const UserSchema = new mongoose.Schema({
 })
 
 UserSchema.pre('save', async function(){
-    
+
     this.password = await bcrypt.hash(this.password, 10);
 
 })
+
+UserSchema.methods.createJWT = function (){
+    return jwt.sign(
+        {
+           userId: this._id,    
+           name: this.name
+        },
+        process.env.JWT_SECRET,
+        {expiresIn: process.env.JWT_LIFETIME}
+    )
+
+}
+
+// Comparing password what actual pwd of user and what pwd is using to login.
+UserSchema.methods.comparePassword = async function(userPassword){
+   const isMatch = bcrypt.compare(userPassword, this.password);
+   return isMatch;
+}
 
 module.exports = mongoose.model('User', UserSchema);
