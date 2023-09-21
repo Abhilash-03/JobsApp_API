@@ -9,13 +9,14 @@ const app = express();
 
 const authRouter = require('./routes/auth');
 const jobRouter = require('./routes/jobs');
+const authenticated = require('./middleware/authentication');
 
 const PORT = process.env.PORT || 3000;  
 
 app.use(express.json());
 
 app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/jobs', jobRouter);
+app.use('/api/v1/jobs', authenticated, jobRouter);
 
 app.use(notFound);
 app.use(errorHandler);   
